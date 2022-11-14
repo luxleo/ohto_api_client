@@ -1,0 +1,937 @@
+openapi: 3.0.3
+info:
+  title: Ohto api server
+  version: 1.0.0
+  description: User, Song, Playlist API
+paths:
+  /accounts/mypage/:
+    get:
+      operationId: accounts_mypage_retrieve
+      summary: jwt 필요, 유저 mypage에 담길 정보 반환.
+      parameters:
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 토큰 담아서 get 요청하면 된다.
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyPage'
+              examples:
+                조회(get)예시:
+                  value:
+                    username: lux
+                    email: test@gmail.com
+                    phone_number: '01023452345'
+                  description: get 출력은 유저 정보 담긴 Mypage 반환한다.
+                수정(put)예시:
+                  value:
+                    username: 바꿀이름(str)
+                    email: 바꿀이메일(str)(ex:test@gmail.com)
+                    phone_number: 바꿀폰번호(01023452345)총 11자리여야한다
+                  description: 수정(put) 입력은 다음과 같다 (출력은 입력대로 수정된 인스턴스 그대로 반환).
+          description: ''
+    put:
+      operationId: accounts_mypage_update
+      summary: jwt 필요, 수정한 유저정보 그대로 mypage수정.
+      parameters:
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 토큰 담아서 get 요청하면 된다.
+      - in: query
+        name: phone_number
+        schema:
+          type: string
+        description: 수정할 폰번호이고 010-?\d{4}-?\d{4} 꼴로 전화번호 받는다 '-' 없이 다 붙여서 넣는다.
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: 수정할 닉네임 단순히 str입력이다.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyPage'
+            examples:
+              조회(get)예시:
+                value:
+                  username: lux
+                  email: test@gmail.com
+                  phone_number: '01023452345'
+                description: get 출력은 유저 정보 담긴 Mypage 반환한다.
+              수정(put)예시:
+                value:
+                  username: 바꿀이름(str)
+                  email: 바꿀이메일(str)(ex:test@gmail.com)
+                  phone_number: 바꿀폰번호(01023452345)총 11자리여야한다
+                description: 수정(put) 입력은 다음과 같다 (출력은 입력대로 수정된 인스턴스 그대로 반환).
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MyPage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MyPage'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyPage'
+          description: ''
+  /accounts/signup/:
+    post:
+      operationId: accounts_signup_create
+      description: 유저 생성전용 api이므로 입력만 유의하면 된다. 반환값은 생성된 유저 인스턴스이다.
+      summary: 회원가입 api, 유일하게 jwt필요없다.
+      parameters:
+      - in: query
+        name: phone_number
+        schema:
+          type: string
+        description: 010-?\d{4}-?\d{4} 꼴로 전화번호 받는다 '-' 없이 다 붙여서 넣는다.
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: 닉네임 필드로사용하고 단순히 str입력이다.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUp'
+            examples:
+              입력예시:
+                value:
+                  username: lux
+                  email: test@gmail.com
+                  password: '1234'
+                  phone_number: '01023452345'
+                description: create시 입력은 다음과 같다.
+              반환예시:
+                value:
+                  username: lux
+                  email: test@gmail.com
+                  password: '1234'
+                  phone_number: '01023452345'
+                description: create시 출력은 다음과 같다 (입력대로 생성된 인스턴스 그대로 반환).
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SignUp'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SignUp'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignUp'
+              examples:
+                입력예시:
+                  value:
+                    username: lux
+                    email: test@gmail.com
+                    password: '1234'
+                    phone_number: '01023452345'
+                  description: create시 입력은 다음과 같다.
+                반환예시:
+                  value:
+                    username: lux
+                    email: test@gmail.com
+                    password: '1234'
+                    phone_number: '01023452345'
+                  description: create시 출력은 다음과 같다 (입력대로 생성된 인스턴스 그대로 반환).
+          description: ''
+  /accounts/token/:
+    post:
+      operationId: accounts_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /accounts/token/refresh/:
+    post:
+      operationId: accounts_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /accounts/token/verify/:
+    post:
+      operationId: accounts_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /playlist/:
+    get:
+      operationId: playlist_list
+      summary: jwt 필요, 유저가 현재 가지고 있는 플레이리스트 반환.
+      parameters:
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 토큰 담아서 get 요청하면 된다.
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayList'
+              examples:
+                List조회시:
+                  value:
+                  - - id: 0
+                      title: string
+                      desc: 플레이리스트 설명string
+                      cover_img: img_url(str)
+                    - id: 1
+                      title: string
+                      desc: string
+                      cover_img: img_url(str)
+                    - id: 2
+                      title: string
+                      desc: string
+                      cover_img: img_url(str)
+                  summary: list조회시
+                  description: 유저가 가지고 있는 플레이리스트 반환.
+          description: ''
+    post:
+      operationId: playlist_create
+      summary: jwt 필요, 입력한 대로 플레이리스트 생성.
+      parameters:
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 입력한대로 플레이리스트 만들고 id필드 추가해서 같이 반환.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+          description: ''
+  /playlist/{id}/:
+    get:
+      operationId: playlist_retrieve
+      summary: jwt 필요, 유저가 보유한 플레이리스트 중, 조회한 id와 일치하는 플레이리스트 반환.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: jwt 필요, 유저가 보유한 플레이리스트 중, 조회한 id와 일치하는 플레이리스트 반환.
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+          description: ''
+    put:
+      operationId: playlist_update
+      summary: jwt 필요, 조회한 id와 일치하는 플레이리스트 수정. title은 필수필드 이므로 비워서는 안된다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: jwt 필요, 유저가 보유한 플레이리스트 중, 조회한 id와 일치하는 플레이리스트 수정.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+          description: ''
+    patch:
+      operationId: playlist_partial_update
+      summary: jwt 필요, 조회한 id와 일치하는 플레이리스트 수정. title은 필수필드 이므로 비워서는 안된다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: jwt 필요, 유저가 보유한 플레이리스트 중, 조회한 id와 일치하는 플레이리스트 수정.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlayList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlayList'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+          description: ''
+    delete:
+      operationId: playlist_destroy
+      summary: jwt 필요, 조회한 id와 일치하는 플레이리스트 삭제.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: jwt 필요, 유저가 보유한 플레이리스트 중, 조회한 id와 일치하는 플레이리스트 삭제.
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+          description: ''
+  /playlist/{id}/delete_songs/:
+    post:
+      operationId: playlist_delete_songs_create
+      summary: jwt 필요, 해당 id의 플레이리스트에 들어있는 곡 중 삭제하고 싶은 곡의 아이디를 넣자 -> 삭제가 되었다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 실을 웹토큰 필수로 넣어야한다.
+      - in: query
+        name: songs
+        schema:
+          type: string
+        description: 플레이리스트 내에서 삭제할 곡들의 id 리스트이다.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+            examples:
+              DeleteApi날릴때Json필드:
+                value:
+                  songs:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 5
+                  - 14
+                  - 24
+                summary: delete api 날릴때 json필드
+                description: songs 키 안에 현재 플레이리스트에 들어있는 삭제할 곡 id 리스트 날리자.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+              examples:
+                DeleteApi날릴때Json필드:
+                  value:
+                    songs:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 14
+                    - 24
+                  summary: delete api 날릴때 json필드
+                  description: songs 키 안에 현재 플레이리스트에 들어있는 삭제할 곡 id 리스트 날리자.
+          description: ''
+  /playlist/{id}/get_songs/:
+    get:
+      operationId: playlist_get_songs_retrieve
+      summary: jwt 필요, 해당 id의 플레이리스트에 들어있는 곡들을 반환한다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 실을 웹토큰 필수로 넣어야한다.
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+              examples:
+                GETApi날리고받는Json필드:
+                  value:
+                    song_list:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 14
+                    - 24
+                  summary: GET api 날리고 받는 json필드
+                  description: song_list 키 안에 현재 플레이리스트에 들어있는 곡들의 id 리스트 받는다..
+          description: ''
+  /playlist/{id}/insert_songs/:
+    post:
+      operationId: playlist_insert_songs_create
+      summary: jwt 필요, 해당 id의 플레이리스트에 들어있는 곡 중 추기하고 싶은 곡의 아이디를 넣자 -> 추가가 되었다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 실을 웹토큰 필수로 넣어야한다.
+      - in: query
+        name: songs
+        schema:
+          type: string
+        description: 플레이리스트 내에서 추가할 곡들의 id 리스트이다.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+            examples:
+              POSTApi날릴때Json필드:
+                value:
+                  songs:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 5
+                  - 14
+                  - 24
+                summary: POST api 날릴때 json필드
+                description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+              POSTApi날리고받는Json필드:
+                value: 아무것도 반환 하지 않는다 상태코드 201만 반환
+                summary: POST api 날리고 받는 json필드
+                description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+              examples:
+                POSTApi날릴때Json필드:
+                  value:
+                    songs:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 14
+                    - 24
+                  summary: POST api 날릴때 json필드
+                  description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+                POSTApi날리고받는Json필드:
+                  value: 아무것도 반환 하지 않는다 상태코드 201만 반환
+                  summary: POST api 날리고 받는 json필드
+                  description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+          description: ''
+    put:
+      operationId: playlist_insert_songs_update
+      summary: jwt 필요, 해당 id의 플레이리스트에 들어있는 곡 중 추기하고 싶은 곡의 아이디를 넣자 -> 추가가 되었다.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this play list.
+        required: true
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 실을 웹토큰 필수로 넣어야한다.
+      - in: query
+        name: songs
+        schema:
+          type: string
+        description: 플레이리스트 내에서 추가할 곡들의 id 리스트이다.
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+            examples:
+              POSTApi날릴때Json필드:
+                value:
+                  songs:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 5
+                  - 14
+                  - 24
+                summary: POST api 날릴때 json필드
+                description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+              POSTApi날리고받는Json필드:
+                value: 아무것도 반환 하지 않는다 상태코드 201만 반환
+                summary: POST api 날리고 받는 json필드
+                description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlayList'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayList'
+              examples:
+                POSTApi날릴때Json필드:
+                  value:
+                    songs:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 14
+                    - 24
+                  summary: POST api 날릴때 json필드
+                  description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+                POSTApi날리고받는Json필드:
+                  value: 아무것도 반환 하지 않는다 상태코드 201만 반환
+                  summary: POST api 날리고 받는 json필드
+                  description: songs 키 안에 현재 플레이리스트에 들어있는 추가할 곡 id 리스트 날리자.
+          description: ''
+  /songs/search/:
+    get:
+      operationId: songs_search_retrieve
+      summary: jwt 필요, search키 값에 들어온 제목이나 아티스트를 포함하는 곡들을 반환한다.
+      parameters:
+      - in: query
+        name: jwt.token
+        schema:
+          type: string
+        description: 헤더에 실을 웹토큰 필수로 넣어야한다.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: query string 형식으로 보내며 키는 search로 보낸다.
+      tags:
+      - songs
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+              examples:
+                Search쿼리스트링으로검색할때.:
+                  value: /songs/search/?search=<str:검색값>
+                  summary: search 쿼리스트링으로 검색할때.
+                  description: 쿼리스트링에 search 키값으로 제목이나 가수를 넘긴다.
+                Search검색반환값.:
+                  value:
+                  - id: 1
+                    title: 곡 제목(str)
+                    artist: 가수(str)
+                    tags: str
+                    youtube_link: link(str)
+                  - id: 2
+                    title: 곡 제목(str)
+                    artist: 가수(str)
+                    tags: str
+                    youtube_link: link(str)
+                  - id: 3
+                    title: 곡 제목(str)
+                    artist: 가수(str)
+                    tags: str
+                    youtube_link: link(str)
+                  summary: search 검색 반환값.
+                  description: 곡중 제목이나 가수를 포함하는 곡들을 반환한다.
+          description: ''
+components:
+  schemas:
+    MyPage:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        avatar_url:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          pattern: ^010-?\d{4}-?\d{4}$
+          maxLength: 40
+      required:
+      - avatar_url
+      - username
+    PatchedPlayList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 150
+        desc:
+          type: string
+        cover_img:
+          type: string
+          format: uri
+    PlayList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 150
+        desc:
+          type: string
+        cover_img:
+          type: string
+          format: uri
+      required:
+      - id
+      - title
+    SignUp:
+      type: object
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone_number:
+          type: string
+          pattern: ^010-?\d{4}-?\d{4}$
+          maxLength: 40
+      required:
+      - password
+      - pk
+      - username
+    Song:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        artist:
+          type: string
+          maxLength: 150
+        youtube_link:
+          type: string
+          format: uri
+          maxLength: 200
+        tags:
+          type: string
+          maxLength: 250
+      required:
+      - artist
+      - id
+      - title
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
